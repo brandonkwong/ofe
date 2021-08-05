@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { TouchableOpacity, StyleSheet, View, Text, ScrollView } from 'react-native';
 import { connect } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import Actions from './actions';
@@ -10,18 +10,34 @@ import theme from './theme';
 interface HomeProps {
   users: User[];
   fetchUsers: () => void;
+  fetchUserPosts: (userId: number) => void;
 }
 
-export const Home = React.memo(({ users, fetchUsers }: HomeProps): React.ReactElement => {
+export const Home = React.memo(({
+  users,
+  fetchUsers,
+  fetchUserPosts
+}: HomeProps): React.ReactElement => {
+  const [userIndex, setUserIndex] = useState(0);
+  const user = users[userIndex];
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const userToShow = 2;
-  const user = users[userToShow];
+  useEffect(() => {
+    if (user) fetchUserPosts(user.id);
+  }, [user]);
 
-  const next = () => { };
-  const prev = () => { };
+  const next = () => {
+    const nextUserIndex = userIndex === users.length - 1 ? 0 : userIndex + 1;
+    setUserIndex(nextUserIndex);
+  };
+
+  const prev = () => {
+    const prevUserIndex = userIndex === 0 ? users.length - 1 : userIndex - 1;
+    setUserIndex(prevUserIndex);
+  };
 
   if (!users.length) {
     return null;
@@ -45,6 +61,15 @@ export const Home = React.memo(({ users, fetchUsers }: HomeProps): React.ReactEl
           </View>
         </View>
       </View>
+
+      <ScrollView>
+        {user.posts && user.posts.length > 0 && user.posts.map(post => (
+          <View key={post.id} style={styles.postContainer}>
+            <Text style={styles.postTitle}>{post.title}</Text>
+            <Text style={styles.postText} numberOfLines={2}>{post.body}</Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   )
 });
@@ -53,6 +78,7 @@ export default connect((state: State) => ({
   users: Selectors.userData(state),
 }), dispatch => ({
   fetchUsers: () => dispatch(Actions.users.fetchUsers.trigger()),
+  fetchUserPosts: (userId) => dispatch(Actions.users.fetchUserPosts.trigger(userId))
 }))(Home);
 
 const styles = StyleSheet.create({
@@ -82,5 +108,18 @@ const styles = StyleSheet.create({
   s1: {
     fontSize: 12,
     color: theme.colors.basic200
+  },
+  postContainer: {
+    flex: 1,
+    padding: theme.space.lg
+  },
+  postTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.colors.basic,
+  },
+  postText: {
+    fontSize: 12,
+    color: theme.colors.basic
   }
 })

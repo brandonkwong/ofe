@@ -21,6 +21,27 @@ const fetchUsersSuccess: Action = (payload) => ({
 });
 fetchUsersSuccess.toString = () => FETCH_USERS_SUCCESS;
 
+const FETCH_USER_POSTS_REQUEST = 'FETCH_USER_POSTS_REQUEST';
+const fetchUserPostsRequest: Action = (payload) => ({
+  type: FETCH_USER_POSTS_REQUEST,
+  payload
+});
+fetchUserPostsRequest.toString = () => FETCH_USER_POSTS_REQUEST;
+
+const FETCH_USER_POSTS_ERROR = 'FETCH_USER_POSTS_ERROR';
+const fetchUserPostsError: Action = (payload) => ({
+  type: FETCH_USER_POSTS_ERROR,
+  payload
+});
+fetchUserPostsError.toString = () => FETCH_USER_POSTS_ERROR;
+
+const FETCH_USER_POSTS_SUCCESS = 'FETCH_USER_POSTS_SUCCESS';
+const fetchUserPostsSuccess: Action = (payload) => ({
+  type: FETCH_USER_POSTS_SUCCESS,
+  payload
+});
+fetchUserPostsSuccess.toString = () => FETCH_USER_POSTS_SUCCESS;
+
 const requestUsers = () => (dispatch) => {
   dispatch(fetchUsersRequest());
   return fetch('https://jsonplaceholder.typicode.com/users')
@@ -34,6 +55,19 @@ const requestUsers = () => (dispatch) => {
     .then(json => dispatch(fetchUsersSuccess(json)));
 }
 
+const requestUserPosts = (userId: number) => (dispatch) => {
+  dispatch(fetchUserPostsRequest());
+  return fetch(`https://jsonplaceholder.typicode.com/posts?userId=${userId}`)
+    .then(
+      response => response.json(),
+      error => {
+        console.error(error);
+        dispatch(fetchUserPostsError(error))
+      }
+    )
+    .then(json => dispatch(fetchUserPostsSuccess(json)));
+}
+
 export default {
   users: {
     fetchUsers: {
@@ -41,6 +75,12 @@ export default {
       request: fetchUsersRequest,
       error: fetchUsersError,
       success: fetchUsersSuccess
+    },
+    fetchUserPosts: {
+      trigger: requestUserPosts,
+      request: fetchUserPostsRequest,
+      error: fetchUserPostsError,
+      success: fetchUserPostsSuccess
     }
   }
 };

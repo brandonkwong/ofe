@@ -21,6 +21,14 @@ export type User = {
   username: string;
   email: string;
   website: string;
+  posts: UserPost[];
+};
+
+export type UserPost = {
+  id: number;
+  userId: number;
+  title: string;
+  body: string;
 };
 
 export type UserState = {
